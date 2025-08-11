@@ -1,3 +1,8 @@
+/**
+ * 数组去重函数
+ * @param {Array} arr - 需要去重的数组
+ * @returns {Array} 去重后的新数组
+ */
 function unique(arr) {
   return Array.from(new Set(arr));
 }
