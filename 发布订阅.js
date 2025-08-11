@@ -2,6 +2,8 @@ class EventEmitter {
   /**
    * 初始化事件发射器实例
    * 创建一个空的事件对象用于存储事件和对应的处理函数列表
+   * @constructor
+   * @returns {EventEmitter} 返回EventEmitter实例
    */
   constructor() {
     this.events = {};
