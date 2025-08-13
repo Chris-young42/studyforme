@@ -1,7 +1,17 @@
 /**
  * 纯字符串解析URL（适合Node环境，且不依赖Node内置URL API）
- * @param {string} url
+ * @param {string} url - 需要解析的URL字符串
  * @returns {Object} 包含href、protocol、host、hostname、port、pathname、search、hash和query等属性
+ * 返回对象包含:
+ *   - href: 原始URL
+ *   - protocol: 协议部分，如 'http:'
+ *   - host: 主机名和端口，如 'example.com:8080'
+ *   - hostname: 主机名，如 'example.com'
+ *   - port: 端口号，如 '8080'
+ *   - pathname: 路径部分，如 '/path/to/page'
+ *   - search: 查询字符串，如 '?param=value'
+ *   - hash: 哈希部分，如 '#section'
+ *   - query: 查询参数对象，如 {param: 'value'}
  */
 function parseUrl(url) {
   const result = {
