@@ -1,36 +1,26 @@
 /**
- * 异步并发控制函数，用于限制同时执行的Promise数量
- * @param {Function[]} tasks - 返回Promise的函数数组
- * @param {number} limit - 最大并发数，默认为3
- * @returns {Promise<any[]>} - 按顺序解析所有任务结果的Promise
+ * 异步并发控制函数，限制同时执行的异步任务数量
+ * @param {number} poolLimit - 并发限制数量，同时执行的异步任务的最大数量
+ * @param {Array} array - 需要处理的数据数组
+ * @param {Function} iteratorFn - 用于处理数组中每个元素的异步函数
+ * @returns {Promise<Array>} 返回一个Promise，resolve时得到所有异步任务的结果数组
  */
-function asyncPool(tasks, limit = 3) {
-  const results = [];
-  let i = 0;
-  const executing = [];
+async function asyncPool(poolLimit, array, iteratorFn) {
+  const ret = []; // 存储所有异步任务的Promise
+  const executing = []; // 存储正在执行的异步任务Promise
+  for (const item of array) {
+    const p = Promise.resolve().then(() => iteratorFn(item));
+    ret.push(p);
 
-  // 递归入队函数，控制任务执行
-  function enqueue() {
-    // 所有任务已入队，返回resolved状态的Promise
-    if (i === tasks.length) return Promise.resolve();
-    const index = i++;
-    const p = Promise.resolve()
-      .then(() => tasks[index]()) // 执行当前任务
-      .then((res) => {
-        results[index] = res; // 保存执行结果
-      });
-    executing.push(p);
-    // 清理函数，任务完成后从执行队列中移除
-    const clean = () => executing.splice(executing.indexOf(p), 1);
-    p.then(clean).catch(clean);
-    let r = Promise.resolve();
-    // 达到并发限制时，等待任一任务完成后再继续
-    if (executing.length >= limit) {
-      r = Promise.race(executing);
+    // 当设置了并发限制且数组长度大于限制时，控制并发执行数量
+    if (poolLimit <= array.length) {
+      const e = p.then(() => executing.splice(executing.indexOf(e), 1));
+      executing.push(e);
+      // 当正在执行的任务数量达到限制时，等待任意一个任务完成
+      if (executing.length >= poolLimit) {
+        await Promise.race(executing);
+      }
     }
-    return r.then(() => enqueue());
   }
-  return enqueue()
-    .then(() => Promise.all(executing)) // 等待所有任务完成
-    .then(() => results);
+  return Promise.all(ret);
 }
